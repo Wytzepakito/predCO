@@ -325,7 +325,7 @@ for file in positive negative
 
 do
 
-fimo --oc ${file}_fimo/ --verbosity 1 --thresh 1.0E-4 $REF/motifs.meme $file.all.4000.maxoverlap1kb.fasta
+fimo --oc ${file}_fimo/ --verbosity 1 --thresh 1.0E-4 $src/motifs.meme $file.all.4000.maxoverlap1kb.fasta
 
 Rscript $src/process_fimo_output.r ${file}_fimo/fimo.txt $file.all.4000.maxoverlap1kb.bed ${file}_fimo/$file.all.4000.maxoverlap1kb.bed.fimo.txt
 
