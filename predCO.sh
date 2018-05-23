@@ -1,42 +1,47 @@
-#!/usr/bin/bash 
+#!/usr/bin/bash
 
-### DATA PREPARATION ####
+# genomic feature preparation and prediction model building pipeline for tomato, rice, arabidopsis and maize
+
+usage() {  
+echo "Usage: $0 [-p <true|false>] [-g <true|false>] [-n <sample_gene|genome|pericentromere] -r <reference_genome_folder> -i <input_folder> -o <output_folder> -s <path/to/scripts> -d <path/to/R-3.3.2/Rscript>"
+1>&2; exit ; } 
+
+if [[ ( $# == "--help") ||  $# == "-h" ]] 
+then 
+        usage
+        exit 0
+fi 
+
+## defaults 
 
 do_genome=false
-
 prepare_positive_bed=false
-
-negative_set="pericentromere"  #sample_gene // genome // pericentromere
-
-## Required scripts: 
-
-# find_NNs_v3_print_bed.py	## takes *genome.fasta and prepares NNs.bed file 
-
-# write_genome_lengths.py	## takes *genome.fasta and prepares sizes of genome file 
-
-
+negative_set="sample_gene"  
 SIZE=4000
 
-src="/path/to/scripts"
+while getopts i:o:pgns:r:d: option
+do
+case "${option}"
+in
+i) INDIR=${OPTARG};;
+o) OUTDIR=${OPTARG};;
+p) prepare_positive_bed=${OPTARG};;
+g) do_genome=${OPTARG};;
+n) negative_set=${OPTARG};;
+s) src=${OPTARG};;
+r) REF=${OPTARG};;
+d) RscriptPath=${OPTARG};;
+esac
+done
 
-REF=$species"/ref_genome"
+if [ ! -d "$OUTDIR" ]; then
 
-RscriptPath="/path/to/bin/R-3.3.2/bin/Rscript"
-
-
-if true ; then 
-
-    newFolder=$2
-
-    if [ ! -d "$newFolder" ]; then
-
-        mkdir $newFolder
-
-    fi
-
-    cd $newFolder
+mkdir -p $OUTDIR
 
 fi
+
+cd $OUTDIR
+
 
 
 ###############################
@@ -70,6 +75,8 @@ then
 
 
   ###for bed style but directly from excel file. Assumed to be 1-based ## for arabidopsis
+  
+  cd $INDIR
 
   awk '$3-$2 <= '"$SIZE"'-2000' *CO.bed | awk -F'\t' -v OFS='\t' '{mid=int(($3-$2)/2)+$2; $2=mid-('"$SIZE"'/2)-1; $3=mid+('"$SIZE"'/2); print $0}' | sort -k1,1 -k2,2n | uniq > CO.$SIZE.bed
 
@@ -83,10 +90,12 @@ then
   awk -v OFS='\t' 'function roll(n) {return 1+ int(rand()*n)} {if (roll(2)==1) print $1, $2, $2+4001; else print $1, $3-4001, $3}' positive.bed.overlapping.bed > positive.bed.overlapping_selected.bed
 
   cat positive.bed.overlapping_selected.bed positive.bed.non-overlapping.mrthn1kb.bed | sort -k1,1 -k2,2n > positive.all.4000.maxoverlap1kb.bed
+	
+	cd $OUTDIR
 
 else 
 
-  cp $REF/../positive.all.4000.maxoverlap1kb.bed ./
+  cp $INDIR/positive.all.4000.maxoverlap1kb.bed $OUTDIR
 
 fi 
 
@@ -98,8 +107,6 @@ bedtools getfasta -fi $REF/*genome.fasta -bed positive.all.4000.maxoverlap1kb.be
 sed 's/g/G/g' positive.all.4000.maxoverlap1kb.fasta | sed 's/a/A/g' | sed 's/t/T/g' | sed 's/c/C/g' > positive.all.4000.maxoverlap1kb.tmp
 
 mv positive.all.4000.maxoverlap1kb.tmp positive.all.4000.maxoverlap1kb.fasta
-
-
 
 
 ######################
@@ -345,7 +352,6 @@ paste $file.index $file.Seq.txt $file.Ann.txt $file.fimo.txt > $file.features.tx
 rm $file.Seq.txt $file.Ann.txt $file.fimo.txt 
 
 done
-
 
 python3 $src/prediction_from_features.py ./
 
