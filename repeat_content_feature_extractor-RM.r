@@ -1,8 +1,6 @@
 
 #!/usr/bin/Rscript
 
-#setwd("/home/demir004/scratch/prediction/data/rice/")
-
 args <- commandArgs(trailingOnly=T)  
 
 ## for rice: 
@@ -24,14 +22,13 @@ args <- commandArgs(trailingOnly=T)
 
 
 
+file = args[1] # 8-column bedtools intersect output file 
 
-file = args[1]
-
-ori_file = args[2]
+ori_file = args[2] # 3-column bed file 
 
 outfile = args[3]
 
-namesfile = args[4]
+namesfile = args[4] # list of features i.e. list of repeats
 
 
 df = read.table(file, header=F, sep="\t", stringsAsFactors=F)
@@ -64,11 +61,7 @@ for (i in 1:nrow(ori)){
 }
 
 
-
-#idlist = unique(df[,'id']) 
-
 idlist = ori$id  ### take the id list from original file 
-
 
 
 dfout = data.frame(matrix(NA, ncol = 3, nrow = length(idlist)))
@@ -112,7 +105,7 @@ for (i in 1:nrow(dfout)){
     #// 
 
     
-#    types = unique(dfI[,'type'])  
+#   types = unique(dfI[,'type'])  
     types = names
     
     for (type in types){
@@ -181,9 +174,7 @@ for (i in 1:nrow(dfout)){
                 
             }
             
-            
-   
-                
+
             # find the new overlap of each region in s  
             
             for (j in 1:nrow(s)){
@@ -213,41 +204,11 @@ for (i in 1:nrow(dfout)){
 dfout = dfout[,4:ncol(dfout)]
 
 
-
-
-
-
-## for NA count
-
-#for (j in 1:ncol(df)){ print(colnames(dfout)[j]); print(length(which(is.na(dfout[,j]) ==T)))}
-
-
 ## for 0 count 
 
 for (j in 1:ncol(dfout)) { print(colnames(dfout)[j]); 
                           print(length(which(dfout[,j] == 0)) / nrow(dfout) * 100) }
 
 
-
-
-
-
-# dfout[is.na(dfout)] = 0 ### replace NA's with 0
-
-# out = dfout[, c("id", "LTR", "LTR/Copia", "LTR/Gypsy", "Simple_repeat", "Low_complexity" )]
-
-out = dfout # the column names are same order as in names list. 
-
-
-
-write.table(out, file=outfile, 
+write.table(dfout, file=outfile, 
             col.names=T, row.names=F, sep="\t", quote=F, )
-
-
-
-
-
-
-
-
-
