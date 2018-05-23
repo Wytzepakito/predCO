@@ -28,14 +28,11 @@ def read_features(f_handle, label):
 
 if __name__=="__main__":
 
-    f_path = sys.argv[1]
+    f_path = sys.argv[1] # path/to/species/folder
     
-    #path = "/mnt/scratch/demir004/prediction/data/"
-    #sp_path ="rice/sampled_gene_bw_opt/prediction_with_motifs"
-
     Xpos, Ypos, names1 = read_features(f_path + "positive.features.txt", 1) # sys.argv[1]
 
-    Xneg, Yneg, names2 = read_features(f_path + "negative.features.txt", 0) # sys.argv[2]
+    Xneg, Yneg, names2 = read_features(f_path + "negative.features.txt", 0) # sys.argv[2] for alternative negative set
 
     if names1 == names2:
         
