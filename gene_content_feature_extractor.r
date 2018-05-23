@@ -1,43 +1,21 @@
 
 #!/usr/bin/Rscript
 
-#setwd("/home/demir004/scratch/prediction/data/tomato/")
-
 args <- commandArgs(trailingOnly=T)  
 
-##--- input preparation 
+##--- input preparation example for tomato 
 ##for file in positive.all.4000.maxoverlap1kb.bed negative.all.4000.maxoverlap1kb.bed
 ##do 
 ##    bedtools intersect -wo -a $file -b ref_genome/ITAG2.4_gene_models.gff3 > $file.genes.overlap.out
 ##    bedtools intersect -wo -a $file -b ref_genome/ITAG2.4_repeats_aggressive.gff3 > $file.repeats.overlap.out
 
-##ref_genome$ grep -Po 'repeat_class=.*?;' ITAG2.4_repeats_aggressive.gff3 | sort | uniq | cut -d"=" -f2 | cut -d';' -f1 > aggresive_repeats_list.txt
-
-
-
-# args = c("positive.all.4000.maxoverlap1kb.bed.repeats.overlap.out",
-#         "positive.all.4000.maxoverlap1kb.bed",
-#         "positive.all.4000.maxoverlap1kb.bed.repeat.content.txt",
-#         "ref_genome/aggresive_repeats_list.txt")
-
-
-#args = c("negative.all.4000.maxoverlap1kb.bed.repeats.overlap.out",
-#        "negative.all.4000.maxoverlap1kb.bed",
-#        "negative.all.4000.maxoverlap1kb.bed.repeat.content.txt",
-#        "ref_genome/aggresive_repeats_list.txt")
-
-file = args[1]
+file = args[1] 
 
 ori_file = args[2]
 
 outfile = args[3]
 
 namesfile = args[4]	# gene list 
-
-# file ="MACS_S3_bw200_mfold5_L10kb.bed.genes.overlap.out"
-# ori_file="MACS_S3_bw200_mfold5_L10kb.bed"
-# MACS_S3_bw200_mfold5_L10kb.bed.gene.content0.txt 
-# /mnt/scratch/demir004/prediction/data/tomato/ref_genome/genelist
 
 
 ori = read.table(ori_file, header=F, sep="\t", stringsAsFactors=F)
@@ -64,23 +42,6 @@ names = names[,1]
 
 
 
-
-## split the attribute for the repeat class in tomato file
-
-#for (i in 1:nrow(df)){
-
-#    temp = df[i,'attribute'] 
-
-#    temp = strsplit(temp, ";")[[1]][2]
-
-#    temp = strsplit(temp, "=")[[1]][2]
-
-#    df[i,'type'] = temp
-
-#}
-
-
-
 for (i in 1:nrow(df)){
     
     df[i,'id'] = paste(df[i,'region_chrom'], ":", df[i, 'region_start'], "-", df[i, 'region_end'], sep="")
@@ -94,11 +55,7 @@ for (i in 1:nrow(ori)){
 }
 
 
-
-#idlist = unique(df[,'id']) 
-
 idlist = ori$id  ### take the id list from original file 
-
 
 
 dfout = data.frame(matrix(NA, ncol = 3, nrow = length(idlist)))
@@ -107,9 +64,7 @@ dfout[,'id'] = idlist
 
 count = 0 
 
-for (i in 1:nrow(dfout)){
-#for (i in 1:2){
-    
+for (i in 1:nrow(dfout)){    
     
     id = dfout[i,'id']
     
@@ -142,7 +97,7 @@ for (i in 1:nrow(dfout)){
     #// 
 
     
-#    types = unique(dfI[,'type'])  
+#   types = unique(dfI[,'type'])  # features can be taken from file 
     types = names
     
     for (type in types){
@@ -165,16 +120,12 @@ for (i in 1:nrow(dfout)){
             
         } else {  ## MERGING 
             
-           # sort by start 
+            # sort by start 
             # check if it is overlaps to the next one
-            # if not overlaps, save the first ones  'overlap' value to somewhere
-            # if it is overlaps, save the distance from first row start to second row start 
-        
-           
+            # if it does not overlap, save the first one's  'overlap' value to somewhere
+            # if it overlaps, save the distance from first row start to second row start 
             
-             s = dfIt[order(dfIt$start),] # sorted 
-            
-             
+            s = dfIt[order(dfIt$start),] # sorted         
             
             for (k in 1:nrow(s)){   # merging 
                 
@@ -210,9 +161,7 @@ for (i in 1:nrow(dfout)){
             if (length(I) != 0) s = s[I,]   # update s 
                 
             }
-            
-            
-   
+
                 
             # find the new overlap of each region in s  
             
@@ -242,37 +191,12 @@ for (i in 1:nrow(dfout)){
 
 dfout = dfout[,4:ncol(dfout)]
 
-
-
-## for NA count
-
-#for (j in 1:ncol(df)){ print(colnames(dfout)[j]); print(length(which(is.na(dfout[,j]) ==T)))}
-
-
-## for 0 count 
+## below for loop is summarizes whether the features have value or not for a given bed file 
 
 for (j in 1:ncol(dfout)) { print(colnames(dfout)[j]); 
                           print(length(which(dfout[,j] == 0)) / nrow(dfout) * 100) }
 
+# the column names are same order as in names list. 
 
-
-
-
-
-# dfout[is.na(dfout)] = 0 ### replace NA's with 0
-
-# out = dfout[, c("id", "LTR", "LTR/Copia", "LTR/Gypsy", "Simple_repeat", "Low_complexity" )]
-
-out = dfout # the column names are same order as in names list. 
-
-
-write.table(out, file=outfile, 
+write.table(dfout, file=outfile, 
             col.names=T, row.names=F, sep="\t", quote=F, )
-
-
-
-
-
-
-
-
