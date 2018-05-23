@@ -2,15 +2,14 @@
 
 # genomic feature preparation and prediction model building pipeline for tomato, rice, arabidopsis and maize
 
-usage() {  
-echo "Usage: $0 [-p <true|false>] [-g <true|false>] [-n <sample_gene|genome|pericentromere] -r <reference_genome_folder> -i <input_folder> -o <output_folder> -s <path/to/scripts> -d <path/to/R-3.3.2/Rscript>"
-1>&2; exit ; } 
+usage() { 
+echo "Usage: bash $0 [-h] [-p <true|false>] [-g <true|false>] [-n <sample_gene|genome|pericentromere] -r <reference_genome_folder> -i <input_folder> -o <output_folder> -s <path/to/scripts> -d <path/to/R-3.3.2/Rscript>"
+1>&2; exit 1; } 
 
-if [[ ( $# == "--help") ||  $# == "-h" ]] 
-then 
+if [ $# -eq 0 ]; then 
         usage
-        exit 0
-fi 
+        exit 1
+fi
 
 ## defaults 
 
@@ -19,10 +18,11 @@ prepare_positive_bed=false
 negative_set="sample_gene"  
 SIZE=4000
 
-while getopts i:o:pgns:r:d: option
+while getopts :hi:o:pgns:r:d: option
 do
 case "${option}"
 in
+h) usage;;
 i) INDIR=${OPTARG};;
 o) OUTDIR=${OPTARG};;
 p) prepare_positive_bed=${OPTARG};;
@@ -354,5 +354,3 @@ rm $file.Seq.txt $file.Ann.txt $file.fimo.txt
 done
 
 python3 $src/prediction_from_features.py ./
-
-
